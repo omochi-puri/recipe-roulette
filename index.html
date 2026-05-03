@@ -31,6 +31,8 @@
       gap: 50px;                 /* ← 画像の間隔。数字を変えてもOK */
       padding: 1rem 0;           /* ← 上下の余白。変えてもOK */
       margin-bottom: 2rem;
+      max-width: 45vw; 
+      height: auto;
     }
     .img-bottom img {
       display: block;
@@ -192,6 +194,12 @@
 
     /* ===== 空状態 ===== */
     .empty { font-size: 13px; color: #b4b2a9; padding: 4px 0; }
+
+    .sp-break { display: none; }
+    @media (max-width: 480px) {
+      .sp-break { display: inline; }
+    }
+
   </style>
 </head>
 <body>
@@ -199,7 +207,7 @@
   <div class="img-top"></div>
 
   <div class="app">
-    <h1>お料理ルーレット</h1>
+    <h1>お料理<br class="sp-break">ルーレット</h1>
 
     <!-- 料理リスト -->
     <div class="card">
