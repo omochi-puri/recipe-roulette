@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>お料理ルーレット</title>
+
+　<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ===== ベース ===== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: #fffff9;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* ===== 上下の画像エリア ===== */
+    .img-top {
+      width: 100%;
+      background: url('line3.png') repeat-x center;
+      background-size: auto 100%; /* ← 画像の高さに合わせて自動調整 */
+      height: 100px;              /* ← 高さを変えてもOK */
+    }
+    .img-bottom {
+      display: flex;
+      justify-content: center;   /* ← 中央寄せ */
+      gap: 50px;                 /* ← 画像の間隔。数字を変えてもOK */
+      padding: 1rem 0;           /* ← 上下の余白。変えてもOK */
+      margin-bottom: 2rem;
+    }
+    .img-bottom img {
+      display: block;
+     
+   
+      height: 200px;
+    }
+
+    /* ===== レイアウト ===== */
+    .app { max-width: 600px; margin: 0 auto; padding: 1.5rem 1rem; }
+
+    h1 {
+      font-size: 55px;
+      font-weight: 700;
+      margin-top: 3rem;
+      margin-bottom: 3rem;
+      color: #e9bc00;
+
+      font-family: "Zen Maru Gothic", sans-serif;   /* 字体（フォント）を変える */
+      text-align: center;              /* 中央寄せにする */
+      letter-spacing: 1.5px; 
+     text-shadow:
+    1px  1px 0 #98605e,
+    -1px  1px 0 #98605e,
+    1px -1px 0 #98605e,
+    -1px -1px 0 #98605e;
+
+    }
+
+    /* ===== カード ===== */
+    .card {
+      background: #ffffff;
+      border: 1px solid #e0ddd6;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .sec-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #888780;
+      margin-bottom: 0.75rem;
+    }
+
+    /* ===== タグ（料理リスト） ===== */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #f5f5f0;
+      border: 1px solid #e0ddd6;
+      border-radius: 8px;
+      padding: 3px 9px;
+      font-size: 13px;
+      color: #1a1a1a;
+      margin: 3px;
+    }
+    .tag button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #888780;
+      font-size: 13px;
+      line-height: 1;
+      padding: 0;
+    }
+    .tag button:hover { color: #1a1a1a; }
+
+    /* ===== 入力行 ===== */
+    .row { display: flex; gap: 8px; margin-top: 0.5rem; }
+    .row input {
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 14px;
+      border: 1px solid #c8c5be;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #1a1a1a;
+      font-family: inherit;
+    }
+    .row input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #c8c5be;
+    }
+
+    /* ===== ボタン ===== */
+    .btn {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid #c8c5be;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #1a1a1a;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .btn:hover { background: #f5f5f0; }
+    .btn:active { transform: scale(0.98); }
+
+    /* ===== ルーレット円盤 ===== */
+    .wheel-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+    }
+    .pointer-wrap {
+      position: relative;
+      width: 300px;
+      height: 8px;
+      margin-bottom: -4px;
+    }
+    .pointer {
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 18px solid #ed6d35; /* ← ポインターの色。変えてもOK */
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    canvas { display: block; }
+
+    /* ===== スピンボタン ===== */
+    .spin-btn {
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      border: 1px solid #888780;
+      border-radius: 12px;
+      background: #ffffff;
+      color: #1a1a1a;
+      cursor: pointer;
+      margin-top: 0.75rem;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .spin-btn:hover { background: #f5f5f0; }
+    .spin-btn:active { transform: scale(0.99); }
+    .spin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ===== 結果エリア ===== */
+    .result-area {
+      text-align: center;
+      padding: 1rem;
+      background: #fffff9;
+      border-radius: 12px;
+      margin-top: 0.75rem;
+    }
+    .result-label { font-size: 12px; color: #888780; margin-bottom: 4px; }
+    .result-name { font-size: 32px; font-weight: 500; color: #1a1a1a; min-height: 32px; }
+
+    /* ===== 空状態 ===== */
+    .empty { font-size: 13px; color: #b4b2a9; padding: 4px 0; }
+  </style>
+</head>
+<body>
+  <!-- 上：line3.png を横に繰り返し -->
+  <div class="img-top"></div>
+
+  <div class="app">
+    <h1>お料理ルーレット</h1>
+
+    <!-- 料理リスト -->
+    <div class="card">
+      <div class="sec-label">料理リスト</div>
+      <div id="dish-list"></div>
+      <div class="row">
+        <input type="text" id="dish-input" placeholder="料理名を入力..." />
+        <button class="btn" onclick="addDish()">追加</button>
+      </div>
+    </div>
+
+    <!-- ルーレット -->
+    <div class="card">
+      <div class="sec-label">ルーレット</div>
+      <div class="wheel-wrap">
+        <div class="pointer-wrap"><div class="pointer"></div></div>
+        <canvas id="wheel" width="300" height="300"></canvas>
+      </div>
+      <div class="result-area">
+        <div class="result-label" id="result-label">スタートを押してください</div>
+        <div class="result-name" id="result-name"></div>
+      </div>
+      <button class="spin-btn" id="spin-btn" onclick="spin()">スタート！</button>
+    </div>
+  </div>
+
+  <!-- 下：chef.png と kani.png を横に並べる -->
+  <div class="img-bottom">
+    <img src="chef.png" alt="シェフ" />
+    <img src="kani.png" alt="カニ" />
+  </div>
+
+  <script>
+    // ===== 設定 =====
+    const STORAGE_KEY = 'recipe_roulette_simple';
+
+    // 円盤のスライスカラー（増やしたり変えたりしてもOK）
+    const COLORS = [
+      '#CECBF6', '#9FE1CB', '#F5C4B3', '#F4C0D1',
+      '#FAC775', '#B5D4F4', '#C0DD97', '#F0997B',
+      '#85B7EB', '#5DCAA5'
+    ];
+
+    // ===== 状態 =====
+    let dishes = [];
+    let angle  = 0;
+    let animId = null;
+
+    // ===== 保存・読み込み =====
+    function loadState() {
+      try {
+        const d = localStorage.getItem(STORAGE_KEY);
+        if (d) dishes = JSON.parse(d);
+      } catch (e) {}
+    }
+    function saveState() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(dishes)); } catch (e) {}
+    }
+
+    // ===== 料理リスト =====
+    function renderDishes() {
+      const el = document.getElementById('dish-list');
+      if (!dishes.length) {
+        el.innerHTML = '<div class="empty">まだ登録がありません</div>';
+        return;
+      }
+      el.innerHTML = dishes.map((d, i) =>
+        `<span class="tag">
+          ${d}
+          <button onclick="removeDish(${i})">×</button>
+        </span>`
+      ).join('');
+    }
+
+    function addDish() {
+      const inp  = document.getElementById('dish-input');
+      const name = inp.value.trim();
+      if (!name || dishes.includes(name)) return;
+      dishes.push(name);
+      saveState(); renderDishes(); drawWheel();
+      inp.value = ''; inp.focus();
+    }
+
+    function removeDish(i) {
+      dishes.splice(i, 1);
+      saveState(); renderDishes(); drawWheel();
+    }
+
+    // ===== 円盤描画 =====
+    function drawWheel() {
+      const canvas = document.getElementById('wheel');
+      const ctx    = canvas.getContext('2d');
+      const cx = 150, cy = 150, r = 140;
+      ctx.clearRect(0, 0, 300, 300);
+
+      if (!dishes.length) {
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = '#c8c5be'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.fillStyle = '#888780';
+        ctx.font = '14px sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('料理を追加してください', cx, cy);
+        return;
+      }
+
+      const n     = dishes.length;
+      const slice = (Math.PI * 2) / n;
+
+      for (let i = 0; i < n; i++) {
+        const start = angle + i * slice - Math.PI / 2;
+        const end   = start + slice;
+        ctx.beginPath(); ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, start, end); ctx.closePath();
+        ctx.fillStyle = COLORS[i % COLORS.length];
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+
+        const mid = start + slice / 2;
+        const tx  = cx + r * 0.62 * Math.cos(mid);
+        const ty  = cy + r * 0.62 * Math.sin(mid);
+        ctx.save();
+        ctx.translate(tx, ty); ctx.rotate(mid + Math.PI / 2);
+        ctx.fillStyle = '#2C2C2A';
+        ctx.font = `${n > 8 ? 10 : n > 5 ? 12 : 14}px sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        const label = dishes[i].length > 8 ? dishes[i].slice(0, 7) + '…' : dishes[i];
+        ctx.fillText(label, 0, 0);
+        ctx.restore();
+      }
+
+      ctx.beginPath(); ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff'; ctx.fill();
+      ctx.strokeStyle = '#c8c5be'; ctx.lineWidth = 1; ctx.stroke();
+    }
+
+    // ===== スピン =====
+    function spin() {
+      if (!dishes.length) {
+        alert('料理を追加してください。');
+        return;
+      }
+      if (animId) return;
+
+      document.getElementById('result-label').textContent = '選んでいます...';
+      document.getElementById('result-name').textContent  = '';
+      document.getElementById('spin-btn').disabled        = true;
+
+      const targetIdx   = Math.floor(Math.random() * dishes.length);
+      const n           = dishes.length;
+      const sliceAngle  = (Math.PI * 2) / n;
+      const targetAngle = Math.PI * 2 * (4 + Math.random())
+                        + Math.PI / 2
+                        - (targetIdx * sliceAngle + sliceAngle / 2);
+
+      let start = null;
+      const duration   = 3800; // アニメーション時間（ミリ秒）。変えてもOK
+      const startAngle = angle;
+
+      function ease(t) { return t < 1 ? 1 - Math.pow(1 - t, 4) : 1; }
+
+      function frame(ts) {
+        if (!start) start = ts;
+        const t = Math.min((ts - start) / duration, 1);
+        angle = startAngle + targetAngle * ease(t);
+        drawWheel();
+        if (t < 1) { animId = requestAnimationFrame(frame); return; }
+
+        animId = null;
+        angle  = angle % (Math.PI * 2);
+        document.getElementById('result-label').textContent = '今日のごはんはこれ！';
+        document.getElementById('result-name').textContent  = dishes[targetIdx];
+        document.getElementById('spin-btn').disabled        = false;
+      }
+      animId = requestAnimationFrame(frame);
+    }
+
+    // ===== Enter キーで追加 =====
+    document.getElementById('dish-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addDish();
+    });
+
+    // ===== 起動 =====
+    loadState();
+    renderDishes();
+    drawWheel();
+  </script>
+</body>
+</html>
